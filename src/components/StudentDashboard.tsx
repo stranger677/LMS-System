@@ -90,7 +90,59 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({
   
   React.useEffect(() => {
     const exams = JSON.parse(localStorage.getItem('publishedExams') || '[]');
-    setPublishedExams(exams.filter((exam: any) => exam.status === 'published'));
+    const filteredExams = exams.filter((exam: any) => {
+      if (exam.status !== 'published') return false;
+      
+      // Check if student has access based on section and batch
+      const studentProfile = JSON.parse(localStorage.getItem('currentStudentProfile') || '{"section": "A", "batch": "2021"}');
+      const studentSection = studentProfile.section;
+      const studentBatch = studentProfile.batch;
+      
+      const sectionAccess = !exam.sections || exam.sections.length === 0 || exam.sections.includes(studentSection);
+      const batchAccess = !exam.batches || exam.batches.length === 0 || exam.batches.includes(studentBatch);
+      
+      return sectionAccess && batchAccess;
+    });
+    
+    setPublishedExams(filteredExams);
+    
+    // Listen for real-time exam updates
+    const handleExamPublished = (event: CustomEvent) => {
+      const newExam = event.detail;
+      // Check if student has access to this exam
+      const studentProfile = JSON.parse(localStorage.getItem('currentStudentProfile') || '{"section": "A", "batch": "2021"}');
+      const studentSection = studentProfile.section;
+      const studentBatch = studentProfile.batch;
+      
+      const sectionAccess = !newExam.sections || newExam.sections.length === 0 || newExam.sections.includes(studentSection);
+      const batchAccess = !newExam.batches || newExam.batches.length === 0 || newExam.batches.includes(studentBatch);
+      
+      if (sectionAccess && batchAccess) {
+        setPublishedExams(prev => {
+          const existingIndex = prev.findIndex(exam => exam.id === newExam.id);
+          if (existingIndex >= 0) {
+            const updated = [...prev];
+            updated[existingIndex] = newExam;
+            return updated;
+          } else {
+            return [...prev, newExam];
+          }
+        });
+      }
+    };
+    
+    const handleExamUnpublished = (event: CustomEvent) => {
+      const { examId } = event.detail;
+      setPublishedExams(prev => prev.filter(exam => exam.id !== examId));
+    };
+    
+    window.addEventListener('examPublished', handleExamPublished as EventListener);
+    window.addEventListener('examUnpublished', handleExamUnpublished as EventListener);
+    
+    return () => {
+      window.removeEventListener('examPublished', handleExamPublished as EventListener);
+      window.removeEventListener('examUnpublished', handleExamUnpublished as EventListener);
+    };
   }, []);
 
   // Combine static exams with published exams

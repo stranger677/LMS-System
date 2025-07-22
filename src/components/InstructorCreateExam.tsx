@@ -261,8 +261,11 @@ const InstructorCreateExam: React.FC<InstructorCreateExamProps> = ({
       questions,
       status: 'published',
       isPublished: true,
+      publishedAt: new Date().toISOString(),
       createdAt: new Date().toISOString(),
-      instructor: 'Dr. Sarah Wilson'
+      instructor: 'Dr. Sarah Wilson',
+      instructorId: 'instructor_001',
+      eligibleStudents: calculateEligibleStudents(examData.sections, examData.batches, examData.maxStudents)
     };
 
     // Store in localStorage for demo purposes
@@ -288,6 +291,8 @@ const InstructorCreateExam: React.FC<InstructorCreateExamProps> = ({
       localStorage.setItem('publishedExams', JSON.stringify([...publishedExams, newExam]));
     }
 
+    // Trigger a custom event to notify other components
+    window.dispatchEvent(new CustomEvent('examPublished', { detail: examToPublish }));
     toast({
       title: "Success",
       description: editingExam ? "Exam updated and published!" : "Exam published successfully! Students can now see it."
@@ -295,6 +300,20 @@ const InstructorCreateExam: React.FC<InstructorCreateExamProps> = ({
     onExamCreated();
   };
 
+  // Helper function to calculate eligible students
+  const calculateEligibleStudents = (sections: string[], batches: string[], maxStudents: string) => {
+    // This would normally query the database for actual student counts
+    // For demo purposes, we'll calculate estimated numbers
+    const studentsPerSection = 35;
+    const sectionsCount = sections.length || 1;
+    const estimatedTotal = sectionsCount * studentsPerSection;
+    
+    if (maxStudents && parseInt(maxStudents) > 0) {
+      return Math.min(estimatedTotal, parseInt(maxStudents));
+    }
+    
+    return estimatedTotal;
+  };
   const totalPoints = questions.reduce((sum, q) => sum + q.maxPoints, 0);
 
   return (
@@ -409,7 +428,7 @@ const InstructorCreateExam: React.FC<InstructorCreateExamProps> = ({
                 {/* Section Selection */}
                 <div>
                   <Label className="text-base font-medium">Allowed Sections *</Label>
-                  <p className="text-sm text-gray-600 mb-3">Select which sections can participate in this exam</p>
+                  <p className="text-sm text-gray-600 mb-3">Select which sections can participate in this exam (students will only see exams for their section)</p>
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                     {availableSections.map((section) => (
                       <div key={section.value} className="flex items-center space-x-2">
@@ -429,7 +448,7 @@ const InstructorCreateExam: React.FC<InstructorCreateExamProps> = ({
                 {/* Batch Selection */}
                 <div>
                   <Label className="text-base font-medium">Allowed Batches *</Label>
-                  <p className="text-sm text-gray-600 mb-3">Select which batches can participate in this exam</p>
+                  <p className="text-sm text-gray-600 mb-3">Select which batches can participate in this exam (students will only see exams for their batch)</p>
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                     {availableBatches.map((batch) => (
                       <div key={batch.value} className="flex items-center space-x-2">
@@ -575,6 +594,11 @@ const InstructorCreateExam: React.FC<InstructorCreateExamProps> = ({
                     <span className="text-sm">Max Students: {examData.maxStudents}</span>
                   </div>
                 )}
+                <div className="pt-2 border-t">
+                  <div className="text-xs text-gray-600">
+                    <strong>Estimated Eligible Students:</strong> {calculateEligibleStudents(examData.sections, examData.batches, examData.maxStudents)}
+                  </div>
+                </div>
               </CardContent>
             </Card>
 

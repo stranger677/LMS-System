@@ -13,6 +13,8 @@ interface ExamInterfaceProps {
     id: number;
     title: string;
     duration: number; // in minutes
+    course?: string;
+    instructor?: string;
     questions: Array<{
       id: number;
       type: 'mcq' | 'short';
@@ -139,6 +141,7 @@ const ExamInterface: React.FC<ExamInterfaceProps> = ({ exam, onSubmit, onExit })
         <div className="flex justify-between items-center max-w-7xl mx-auto">
           <div>
             <h1 className="text-xl font-bold text-nu-primary">{exam.title}</h1>
+            {exam.course && <p className="text-sm text-gray-600">{exam.course}</p>}
             <p className="text-sm text-gray-600">
               Question {currentQuestion + 1} of {exam.questions.length}
             </p>

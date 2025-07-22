@@ -116,6 +116,17 @@ const Index = () => {
     setCurrentUser(userData);
     setShowLoginModal(false);
     setCurrentView('dashboard');
+    
+    // Set student profile for demo purposes
+    if (userData.role === 'student') {
+      const studentProfile = {
+        section: 'A',
+        batch: '2021',
+        studentId: '2021001234',
+        department: 'Computer Science'
+      };
+      localStorage.setItem('currentStudentProfile', JSON.stringify(studentProfile));
+    }
   };
 
   const handleDirectLogin = (e: React.FormEvent) => {

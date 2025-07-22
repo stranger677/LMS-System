@@ -100,14 +100,40 @@ const ExamsPage: React.FC<ExamsPageProps> = ({
   React.useEffect(() => {
     if (userRole === 'student') {
       const exams = JSON.parse(localStorage.getItem('publishedExams') || '[]');
-      setPublishedExams(exams);
+      setPublishedExams(exams.filter((exam: any) => exam.status === 'published'));
+      
+      // Listen for real-time exam updates
+      const handleExamPublished = (event: CustomEvent) => {
+        const newExam = event.detail;
+        setPublishedExams(prev => {
+          const existingIndex = prev.findIndex(exam => exam.id === newExam.id);
+          if (existingIndex >= 0) {
+            const updated = [...prev];
+            updated[existingIndex] = newExam;
+            return updated;
+          } else {
+            return [...prev, newExam];
+          }
+        });
+      };
+      
+      const handleExamUnpublished = (event: CustomEvent) => {
+        const { examId } = event.detail;
+        setPublishedExams(prev => prev.filter(exam => exam.id !== examId));
+      };
+      
+      window.addEventListener('examPublished', handleExamPublished as EventListener);
+      window.addEventListener('examUnpublished', handleExamUnpublished as EventListener);
+      
+      return () => {
+        window.removeEventListener('examPublished', handleExamPublished as EventListener);
+        window.removeEventListener('examUnpublished', handleExamUnpublished as EventListener);
+      };
     }
   }, [userRole]);
 
   // Combine static exams with published exams for students
-  const allUpcomingExams = userRole === 'student' 
-    ? [...upcomingExams, ...publishedExams.filter(exam => exam.status === 'published')]
-    : upcomingExams;
+  const allUpcomingExams = userRole === 'student' ? [...upcomingExams, ...publishedExams] : upcomingExams;
 
   const pastExams = [
     {
@@ -149,11 +175,15 @@ const ExamsPage: React.FC<ExamsPageProps> = ({
     return exams.filter(exam => {
       // For students, also check if they're in the allowed sections/batches
       if (userRole === 'student') {
-        const studentSection = 'A'; // This would come from user profile
-        const studentBatch = '2021'; // This would come from user profile
+        // Get student info from localStorage or props (in real app, this would come from authentication)
+        const studentProfile = JSON.parse(localStorage.getItem('currentStudentProfile') || '{"section": "A", "batch": "2021"}');
+        const studentSection = studentProfile.section;
+        const studentBatch = studentProfile.batch;
         
-        const hasAccess = (!exam.sections || exam.sections.length === 0 || exam.sections.includes(studentSection)) &&
-                         (!exam.batches || exam.batches.length === 0 || exam.batches.includes(studentBatch));
+        // Check if student has access to this exam
+        const sectionAccess = !exam.sections || exam.sections.length === 0 || exam.sections.includes(studentSection);
+        const batchAccess = !exam.batches || exam.batches.length === 0 || exam.batches.includes(studentBatch);
+        const hasAccess = sectionAccess && batchAccess;
         
         if (!hasAccess) return false;
       }
@@ -248,9 +278,21 @@ const ExamsPage: React.FC<ExamsPageProps> = ({
             <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
               <span>Total Marks: {exam.totalMarks}</span>
               {exam.questions && <span className="ml-3">Questions: {exam.questions}</span>}
+              {exam.eligibleStudents && <span className="ml-3">Max Students: {exam.eligibleStudents}</span>}
             </div>
           )}
 
+          {/* Show section and batch info for students */}
+          {userRole === 'student' && (exam.sections?.length > 0 || exam.batches?.length > 0) && (
+            <div className="text-xs text-gray-600 dark:text-gray-400 bg-blue-50 dark:bg-blue-900/20 p-2 rounded">
+              {exam.sections?.length > 0 && (
+                <div><strong>Sections:</strong> {exam.sections.join(', ')}</div>
+              )}
+              {exam.batches?.length > 0 && (
+                <div><strong>Batches:</strong> {exam.batches.join(', ')}</div>
+              )}
+            </div>
+          )}
           {exam.timeRemaining && (
             <div className="flex items-center space-x-1 text-sm text-orange-600">
               <AlertTriangle className="h-3 w-3 animate-pulse" />

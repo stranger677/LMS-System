@@ -71,7 +71,15 @@ const InstructorManageExams: React.FC<InstructorManageExamsProps> = ({ onBack, o
 
   const handleTogglePublish = (exam: any) => {
     const updatedStatus = exam.status === 'published' ? 'draft' : 'published';
-    const updatedExam = { ...exam, status: updatedStatus, isPublished: updatedStatus === 'published' };
+    const updatedExam = { 
+      ...exam, 
+      status: updatedStatus, 
+      isPublished: updatedStatus === 'published',
+      publishedAt: updatedStatus === 'published' ? new Date().toISOString() : null,
+      eligibleStudents: updatedStatus === 'published' 
+        ? calculateEligibleStudents(exam.sections || [], exam.batches || [], exam.maxStudents)
+        : 0
+    };
     
     const updatedExams = exams.map(e => e.id === exam.id ? updatedExam : e);
     setExams(updatedExams);
@@ -86,13 +94,16 @@ const InstructorManageExams: React.FC<InstructorManageExamsProps> = ({ onBack, o
       } else {
         publishedExams.push(updatedExam);
       }
+      localStorage.setItem('publishedExams', JSON.stringify(publishedExams));
+      
+      // Trigger event to notify student portal
+      window.dispatchEvent(new CustomEvent('examPublished', { detail: updatedExam }));
     } else {
       const filteredPublished = publishedExams.filter((e: any) => e.id !== exam.id);
       localStorage.setItem('publishedExams', JSON.stringify(filteredPublished));
-    }
-    
-    if (updatedStatus === 'published') {
-      localStorage.setItem('publishedExams', JSON.stringify(publishedExams));
+      
+      // Trigger event to notify student portal
+      window.dispatchEvent(new CustomEvent('examUnpublished', { detail: { examId: exam.id } }));
     }
     
     toast({
@@ -103,6 +114,18 @@ const InstructorManageExams: React.FC<InstructorManageExamsProps> = ({ onBack, o
     });
   };
 
+  // Helper function to calculate eligible students
+  const calculateEligibleStudents = (sections: string[], batches: string[], maxStudents: string) => {
+    const studentsPerSection = 35;
+    const sectionsCount = sections.length || 1;
+    const estimatedTotal = sectionsCount * studentsPerSection;
+    
+    if (maxStudents && parseInt(maxStudents) > 0) {
+      return Math.min(estimatedTotal, parseInt(maxStudents));
+    }
+    
+    return estimatedTotal;
+  };
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}

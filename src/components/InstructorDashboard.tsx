@@ -328,12 +328,12 @@ const InstructorDashboard: React.FC<InstructorDashboardProps> = ({ user, onLogou
               
               <Card className="hover:bg-green-100 hover:text-green-700 dark:hover:bg-green-900/20 dark:hover:text-green-400 cursor-pointer transition-all duration-200 hover:shadow-lg transform hover:scale-105" onClick={handleNavigateToExams}>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Upcoming Exams</CardTitle>
+                  <CardTitle className="text-sm font-medium">My Exams</CardTitle>
                   <Clock className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{upcomingExams.length}</div>
-                  <p className="text-xs text-muted-foreground">Next 2 weeks</p>
+                  <div className="text-2xl font-bold">{JSON.parse(localStorage.getItem('instructorExams') || '[]').length}</div>
+                  <p className="text-xs text-muted-foreground">Total created</p>
                 </CardContent>
               </Card>
               
