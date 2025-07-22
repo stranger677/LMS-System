@@ -49,7 +49,9 @@ const ExamsPage: React.FC<ExamsPageProps> = ({
       totalMarks: 100,
       questions: 25,
       startTime: "2024-06-20T14:00:00",
-      isLive: false
+      isLive: false,
+      sections: ["A", "B"],
+      batches: ["2021", "2022"]
     },
     {
       id: 2,
@@ -66,7 +68,9 @@ const ExamsPage: React.FC<ExamsPageProps> = ({
       totalMarks: 50,
       questions: 1,
       startTime: "2024-06-25T10:00:00",
-      isLive: false
+      isLive: false,
+      sections: ["C"],
+      batches: ["2023"]
     }
   ];
 
@@ -89,6 +93,21 @@ const ExamsPage: React.FC<ExamsPageProps> = ({
       isLive: true
     }
   ];
+
+  // Load published exams from localStorage for students
+  const [publishedExams, setPublishedExams] = useState<any[]>([]);
+  
+  React.useEffect(() => {
+    if (userRole === 'student') {
+      const exams = JSON.parse(localStorage.getItem('publishedExams') || '[]');
+      setPublishedExams(exams);
+    }
+  }, [userRole]);
+
+  // Combine static exams with published exams for students
+  const allUpcomingExams = userRole === 'student' 
+    ? [...upcomingExams, ...publishedExams.filter(exam => exam.status === 'published')]
+    : upcomingExams;
 
   const pastExams = [
     {
@@ -128,6 +147,17 @@ const ExamsPage: React.FC<ExamsPageProps> = ({
   // Filter function
   const filterExams = (exams: any[]) => {
     return exams.filter(exam => {
+      // For students, also check if they're in the allowed sections/batches
+      if (userRole === 'student') {
+        const studentSection = 'A'; // This would come from user profile
+        const studentBatch = '2021'; // This would come from user profile
+        
+        const hasAccess = (!exam.sections || exam.sections.length === 0 || exam.sections.includes(studentSection)) &&
+                         (!exam.batches || exam.batches.length === 0 || exam.batches.includes(studentBatch));
+        
+        if (!hasAccess) return false;
+      }
+      
       const matchesSearch = exam.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                            exam.course.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesStatus = statusFilter === "all" || exam.status === statusFilter;
@@ -406,10 +436,10 @@ const ExamsPage: React.FC<ExamsPageProps> = ({
             <div className="flex flex-col sm:flex-row sm:items-center justify-between space-y-2 sm:space-y-0">
               <h2 className="text-lg sm:text-xl lg:text-2xl font-bold">Upcoming Exams</h2>
               <Badge variant="outline" className="self-start sm:self-center">
-                {filterExams(upcomingExams).length} scheduled
+                {filterExams(allUpcomingExams).length} scheduled
               </Badge>
             </div>
-            {filterExams(upcomingExams).length === 0 ? (
+            {filterExams(allUpcomingExams).length === 0 ? (
               <Card>
                 <CardContent className="p-8 text-center">
                   <Clock className="h-12 w-12 mx-auto text-gray-400 mb-4" />
@@ -424,7 +454,7 @@ const ExamsPage: React.FC<ExamsPageProps> = ({
               </Card>
             ) : (
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                {filterExams(upcomingExams).map((exam) => (
+                {filterExams(allUpcomingExams).map((exam) => (
                   <ExamCard key={exam.id} exam={exam} showActions />
                 ))}
               </div>

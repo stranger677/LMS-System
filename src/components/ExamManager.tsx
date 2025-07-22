@@ -3,8 +3,8 @@ import React, { useState } from 'react';
 import ExamsPage from './ExamsPage';
 import ExamInstructions from './ExamInstructions';
 import ExamInterface from './ExamInterface';
-import CreateExam from './CreateExam';
-import ManageExams from './ManageExams';
+import InstructorCreateExam from './InstructorCreateExam';
+import InstructorManageExams from './InstructorManageExams';
 import GradingInterface from './GradingInterface';
 
 interface ExamManagerProps {
@@ -73,6 +73,14 @@ const ExamManager: React.FC<ExamManagerProps> = ({ onBack, userRole, darkMode = 
     setShowInstructions(false);
   };
 
+  const handleCreateExam = () => {
+    setCurrentView('create');
+  };
+
+  const handleManageExams = () => {
+    setCurrentView('manage');
+  };
+
   if (showInstructions && selectedExam) {
     return (
       <ExamInstructions
@@ -99,20 +107,21 @@ const ExamManager: React.FC<ExamManagerProps> = ({ onBack, userRole, darkMode = 
 
   if (currentView === 'create' && (userRole === 'instructor' || userRole === 'admin')) {
     return (
-      <CreateExam
+      <InstructorCreateExam
         onBack={handleBackToList}
-        darkMode={darkMode}
+        onExamCreated={handleBackToList}
       />
     );
   }
 
   if (currentView === 'manage' && (userRole === 'instructor' || userRole === 'admin')) {
     return (
-      <ManageExams
+      <InstructorManageExams
         onBack={handleBackToList}
-        userRole={userRole}
-        darkMode={darkMode}
-        onGradeExam={() => setCurrentView('grading')}
+        onEditExam={(exam) => {
+          setSelectedExam(exam);
+          setCurrentView('create');
+        }}
       />
     );
   }
@@ -131,8 +140,8 @@ const ExamManager: React.FC<ExamManagerProps> = ({ onBack, userRole, darkMode = 
       onBack={onBack}
       onStartExam={handleStartExam}
       onViewExamDetails={handleViewExamDetails}
-      onCreateExam={() => setCurrentView('create')}
-      onManageExams={() => setCurrentView('manage')}
+      onCreateExam={handleCreateExam}
+      onManageExams={handleManageExams}
       userRole={userRole}
       darkMode={darkMode}
     />

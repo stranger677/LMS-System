@@ -85,6 +85,17 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({
     { id: 2, title: "Final Project Presentation", course: "CS101", date: "2024-06-25", time: "10:00 AM", duration: "1 hour" }
   ];
 
+  // Load published exams from instructor
+  const [publishedExams, setPublishedExams] = useState<any[]>([]);
+  
+  React.useEffect(() => {
+    const exams = JSON.parse(localStorage.getItem('publishedExams') || '[]');
+    setPublishedExams(exams.filter((exam: any) => exam.status === 'published'));
+  }, []);
+
+  // Combine static exams with published exams
+  const allUpcomingExams = [...upcomingExams, ...publishedExams];
+
   // Tasks to be completed (combination of pending assignments and upcoming tasks)
   const tasksToComplete = [
     { id: 1, title: "Complete Calculus Problem Set 5", type: "assignment", course: "MATH301", dueDate: "2024-06-15", priority: "high" },
@@ -380,7 +391,7 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({
                   <Clock className="h-4 w-4 text-muted-foreground flex-shrink-0" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{upcomingExams.length}</div>
+                  <div className="text-2xl font-bold">{allUpcomingExams.length}</div>
                   <p className="text-xs text-muted-foreground">Next 2 weeks</p>
                 </CardContent>
               </Card>
