@@ -35,19 +35,30 @@ interface InstructorDashboardProps {
   user: { role: string; name: string };
   onLogout: () => void;
 }
+interface Assignment {
+  id: number;
+  title: string;
+  course: string;
+  dueDate: string;
+  description?: string;
+  status: 'active' | 'closed';
+}
 
 const InstructorDashboard: React.FC<InstructorDashboardProps> = ({ user, onLogout }) => {
   const [showProfile, setShowProfile] = useState(false);
   const [currentView, setCurrentView] = useState<string>('dashboard');
   const [selectedExam, setSelectedExam] = useState<any>(null);
-  
+  const [showCreateAssignment, setShowCreateAssignment] = useState(false);
   // Dummy data for instructor dashboard
   const courses = [
     { id: 1, name: "Advanced Mathematics", code: "MATH301", students: 45, assignments: 8, exams: 3 },
     { id: 2, name: "Linear Algebra", code: "MATH201", students: 38, assignments: 6, exams: 2 },
     { id: 3, name: "Calculus II", code: "MATH102", students: 52, assignments: 10, exams: 4 }
   ];
-
+  const [assignments, setAssignments] = useState<Assignment[]>([
+    { id: 1, title: "Problem Set 5", course: "MATH301", dueDate: "2024-06-20", status: 'active' },
+    { id: 2, title: "Quiz 3", course: "MATH201", dueDate: "2024-06-18", status: 'active' }
+  ]);
   const recentActivity = [
     { id: 1, action: "New assignment submitted", course: "MATH301", time: "2 hours ago", type: "assignment" },
     { id: 2, action: "Exam completed by 28 students", course: "MATH201", time: "1 day ago", type: "exam" },
@@ -65,6 +76,20 @@ const InstructorDashboard: React.FC<InstructorDashboardProps> = ({ user, onLogou
 
   const handleCreateExam = () => {
     setCurrentView('create-exam');
+  };
+const handleCreateAssignment = (e: React.FormEvent) => {
+    e.preventDefault();
+    const formData = new FormData(e.target as HTMLFormElement);
+    const newAssignment: Assignment = {
+      id: Date.now(),
+      title: formData.get('assignmentTitle') as string,
+      course: formData.get('assignmentCourse') as string,
+      dueDate: formData.get('dueDate') as string,
+      description: formData.get('assignmentDescription') as string,
+      status: 'active'
+    };
+    setAssignments([...assignments, newAssignment]);
+    setShowCreateAssignment(false);
   };
 
   const handleManageExams = () => {
@@ -371,13 +396,43 @@ const InstructorDashboard: React.FC<InstructorDashboardProps> = ({ user, onLogou
                     <Edit className="h-6 w-6" />
                     <span>Manage Exams</span>
                   </Button>
-                  <Button 
-                    variant="outline" 
-                    className="h-20 flex flex-col justify-center items-center space-y-2 hover:bg-green-100 hover:text-green-700"
-                  >
-                    <FileText className="h-6 w-6" />
-                    <span>Create Assignment</span>
-                  </Button>
+                      <Dialog open={showCreateAssignment} onOpenChange={setShowCreateAssignment}>
+                        <DialogTrigger asChild>
+                          <Button className="h-20 flex flex-col hover:shadow-lg hover:bg-blue-50 hover:text-blue-700 transition-all duration-200 hover:scale-105" variant="outline">
+                            <FileText className="h-6 w-6 mb-2" />
+                            <span className="text-xs sm:text-sm">New Assignment</span>
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent className="sm:max-w-md w-full">
+                          <DialogHeader>
+                            <DialogTitle>Create Assignment</DialogTitle>
+                          </DialogHeader>
+                          <form onSubmit={handleCreateAssignment} className="space-y-4">
+                            <div>
+                              <Label htmlFor="assignmentTitle">Assignment Title</Label>
+                              <Input id="assignmentTitle" name="assignmentTitle" placeholder="e.g., Problem Set 6" required />
+                            </div>
+                            <div>
+                              <Label htmlFor="assignmentCourse">Course</Label>
+                              <select name="assignmentCourse" className="w-full p-2 border rounded" required>
+                                <option value="">Select Course</option>
+                                {myCourses.map(course => (
+                                  <option key={course.id} value={course.code}>{course.name}</option>
+                                ))}
+                              </select>
+                            </div>
+                            <div>
+                              <Label htmlFor="dueDate">Due Date</Label>
+                              <Input id="dueDate" name="dueDate" type="datetime-local" required />
+                            </div>
+                            <div>
+                              <Label htmlFor="assignmentDescription">Description</Label>
+                              <Textarea id="assignmentDescription" name="assignmentDescription" placeholder="Assignment instructions..." />
+                            </div>
+                            <Button type="submit" className="w-full">Create Assignment</Button>
+                          </form>
+                        </DialogContent>
+                      </Dialog>
                   <Button 
                     variant="outline" 
                     className="h-20 flex flex-col justify-center items-center space-y-2 hover:bg-green-100 hover:text-green-700"
