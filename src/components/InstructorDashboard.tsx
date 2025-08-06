@@ -66,7 +66,92 @@ const InstructorDashboard: React.FC<InstructorDashboardProps> = ({ user, onLogou
     { id: 2, action: "Exam completed by 28 students", course: "MATH201", time: "1 day ago", type: "exam" },
     { id: 3, action: "Course material uploaded", course: "MATH102", time: "2 days ago", type: "material" }
   ];
-
+const [myCourses, setMyCourses] = useState<Course[]>([
+    {
+      id: 1,
+      name: "Advanced Mathematics",
+      code: "MATH301",
+      students: 45,
+      assignments: 8,
+      announcements: 12,
+      nextClass: "Tomorrow 2:00 PM",
+      status: 'present',
+      semester: 'Spring',
+      year: 2024,
+      startDate: '2024-01-15',
+      endDate: '2024-05-15'
+    },
+    {
+      id: 2,
+      name: "Linear Algebra",
+      code: "MATH201",
+      students: 38,
+      assignments: 6,
+      announcements: 8,
+      nextClass: "Wednesday 10:00 AM",
+      status: 'present',
+      semester: 'Spring',
+      year: 2024,
+      startDate: '2024-01-15',
+      endDate: '2024-05-15'
+    },
+    {
+      id: 3,
+      name: "Calculus I",
+      code: "MATH101",
+      students: 52,
+      assignments: 12,
+      announcements: 15,
+      nextClass: "Completed",
+      status: 'past',
+      semester: 'Fall',
+      year: 2023,
+      startDate: '2023-08-20',
+      endDate: '2023-12-15'
+    },
+    {
+      id: 4,
+      name: "Statistics",
+      code: "MATH205",
+      students: 28,
+      assignments: 10,
+      announcements: 6,
+      nextClass: "Completed",
+      status: 'past',
+      semester: 'Fall',
+      year: 2023,
+      startDate: '2023-08-20',
+      endDate: '2023-12-15'
+    },
+    {
+      id: 5,
+      name: "Advanced Calculus",
+      code: "MATH401",
+      students: 0,
+      assignments: 0,
+      announcements: 0,
+      nextClass: "August 25, 2024",
+      status: 'future',
+      semester: 'Fall',
+      year: 2024,
+      startDate: '2024-08-25',
+      endDate: '2024-12-20'
+    },
+    {
+      id: 6,
+      name: "Differential Equations",
+      code: "MATH302",
+      students: 0,
+      assignments: 0,
+      announcements: 0,
+      nextClass: "August 27, 2024",
+      status: 'future',
+      semester: 'Fall',
+      year: 2024,
+      startDate: '2024-08-27',
+      endDate: '2024-12-22'
+    }
+  ]);
   const upcomingExams = [
     { id: 1, title: "Midterm Exam", course: "MATH301", date: "2024-06-20", students: 45 },
     { id: 2, title: "Final Assessment", course: "MATH201", date: "2024-06-25", students: 38 }
