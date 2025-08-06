@@ -33,18 +33,13 @@ import {
 import ExamManager from './ExamManager';
 import InstructorCreateExam from './InstructorCreateExam';
 import InstructorManageExams from './InstructorManageExams';
+import StudentManagementPage from './StudentManagementPage';
+import AnnouncementPage from './AnnouncementPage';
+import AssignmentManagementPage from './AssignmentManagementPage';
 
 interface InstructorDashboardProps {
   user: { role: string; name: string };
   onLogout: () => void;
-}
-interface Assignment {
-  id: number;
-  title: string;
-  course: string;
-  dueDate: string;
-  description?: string;
-  status: 'active' | 'closed';
 }
 
 const InstructorDashboard: React.FC<InstructorDashboardProps> = ({ user, onLogout }) => {
@@ -58,101 +53,11 @@ const InstructorDashboard: React.FC<InstructorDashboardProps> = ({ user, onLogou
     { id: 2, name: "Linear Algebra", code: "MATH201", students: 38, assignments: 6, exams: 2 },
     { id: 3, name: "Calculus II", code: "MATH102", students: 52, assignments: 10, exams: 4 }
   ];
-  const [assignments, setAssignments] = useState<Assignment[]>([
-    { id: 1, title: "Problem Set 5", course: "MATH301", dueDate: "2024-06-20", status: 'active' },
-    { id: 2, title: "Quiz 3", course: "MATH201", dueDate: "2024-06-18", status: 'active' }
-  ]);
   const recentActivity = [
     { id: 1, action: "New assignment submitted", course: "MATH301", time: "2 hours ago", type: "assignment" },
     { id: 2, action: "Exam completed by 28 students", course: "MATH201", time: "1 day ago", type: "exam" },
     { id: 3, action: "Course material uploaded", course: "MATH102", time: "2 days ago", type: "material" }
   ];
-const [myCourses, setMyCourses] = useState<Course[]>([
-    {
-      id: 1,
-      name: "Advanced Mathematics",
-      code: "MATH301",
-      students: 45,
-      assignments: 8,
-      announcements: 12,
-      nextClass: "Tomorrow 2:00 PM",
-      status: 'present',
-      semester: 'Spring',
-      year: 2024,
-      startDate: '2024-01-15',
-      endDate: '2024-05-15'
-    },
-    {
-      id: 2,
-      name: "Linear Algebra",
-      code: "MATH201",
-      students: 38,
-      assignments: 6,
-      announcements: 8,
-      nextClass: "Wednesday 10:00 AM",
-      status: 'present',
-      semester: 'Spring',
-      year: 2024,
-      startDate: '2024-01-15',
-      endDate: '2024-05-15'
-    },
-    {
-      id: 3,
-      name: "Calculus I",
-      code: "MATH101",
-      students: 52,
-      assignments: 12,
-      announcements: 15,
-      nextClass: "Completed",
-      status: 'past',
-      semester: 'Fall',
-      year: 2023,
-      startDate: '2023-08-20',
-      endDate: '2023-12-15'
-    },
-    {
-      id: 4,
-      name: "Statistics",
-      code: "MATH205",
-      students: 28,
-      assignments: 10,
-      announcements: 6,
-      nextClass: "Completed",
-      status: 'past',
-      semester: 'Fall',
-      year: 2023,
-      startDate: '2023-08-20',
-      endDate: '2023-12-15'
-    },
-    {
-      id: 5,
-      name: "Advanced Calculus",
-      code: "MATH401",
-      students: 0,
-      assignments: 0,
-      announcements: 0,
-      nextClass: "August 25, 2024",
-      status: 'future',
-      semester: 'Fall',
-      year: 2024,
-      startDate: '2024-08-25',
-      endDate: '2024-12-20'
-    },
-    {
-      id: 6,
-      name: "Differential Equations",
-      code: "MATH302",
-      students: 0,
-      assignments: 0,
-      announcements: 0,
-      nextClass: "August 27, 2024",
-      status: 'future',
-      semester: 'Fall',
-      year: 2024,
-      startDate: '2024-08-27',
-      endDate: '2024-12-22'
-    }
-  ]);
   const upcomingExams = [
     { id: 1, title: "Midterm Exam", course: "MATH301", date: "2024-06-20", students: 45 },
     { id: 2, title: "Final Assessment", course: "MATH201", date: "2024-06-25", students: 38 }
@@ -165,21 +70,6 @@ const [myCourses, setMyCourses] = useState<Course[]>([
   const handleCreateExam = () => {
     setCurrentView('create-exam');
   };
-const handleCreateAssignment = (e: React.FormEvent) => {
-    e.preventDefault();
-    const formData = new FormData(e.target as HTMLFormElement);
-    const newAssignment: Assignment = {
-      id: Date.now(),
-      title: formData.get('assignmentTitle') as string,
-      course: formData.get('assignmentCourse') as string,
-      dueDate: formData.get('dueDate') as string,
-      description: formData.get('assignmentDescription') as string,
-      status: 'active'
-    };
-    setAssignments([...assignments, newAssignment]);
-    setShowCreateAssignment(false);
-  };
-
   const handleManageExams = () => {
     setCurrentView('manage-exams');
   };
@@ -192,6 +82,18 @@ const handleCreateAssignment = (e: React.FormEvent) => {
   const handleEditExam = (exam: any) => {
     setSelectedExam(exam);
     setCurrentView('edit-exam');
+  };
+
+  const handleManageStudents = () => {
+    setCurrentView('manage-students');
+  };
+
+  const handlePostAnnouncement = () => {
+    setCurrentView('post-announcement');
+  };
+
+  const handleManageAssignments = () => {
+    setCurrentView('manage-assignments');
   };
 
   // Render different views based on currentView
@@ -219,6 +121,30 @@ const handleCreateAssignment = (e: React.FormEvent) => {
       <InstructorManageExams
         onBack={handleBackToDashboard}
         onEditExam={handleEditExam}
+      />
+    );
+  }
+
+  if (currentView === 'manage-students') {
+    return (
+      <StudentManagementPage
+        onBack={handleBackToDashboard}
+      />
+    );
+  }
+
+  if (currentView === 'post-announcement') {
+    return (
+      <AnnouncementPage
+        onBack={handleBackToDashboard}
+      />
+    );
+  }
+
+  if (currentView === 'manage-assignments') {
+    return (
+      <AssignmentManagementPage
+        onBack={handleBackToDashboard}
       />
     );
   }
@@ -296,9 +222,10 @@ const handleCreateAssignment = (e: React.FormEvent) => {
         <Button 
           variant="ghost" 
           className="w-full justify-start hover:bg-green-100 hover:text-green-700 dark:hover:bg-green-900/20 dark:hover:text-green-400 text-gray-700 dark:text-gray-200 transition-all duration-200"
+          onClick={handlePostAnnouncement}
         >
-          <Settings className="h-4 w-4 mr-2 flex-shrink-0" />
-          <span className="truncate">Settings</span>
+          <Bell className="h-4 w-4 mr-2 flex-shrink-0" />
+          <span className="truncate">Announcements</span>
         </Button>
       </nav>
     </div>
@@ -382,6 +309,8 @@ const handleCreateAssignment = (e: React.FormEvent) => {
                 <Button 
                   variant="ghost" 
                   size="sm" 
+                  onClick={handleManageStudents}
+                  onClick={handleManageAssignments}
                   className="hover:bg-green-100 hover:text-green-700 dark:hover:bg-green-900/20 dark:hover:text-green-400"
                   onClick={() => setShowProfile(!showProfile)}
                 >
@@ -430,7 +359,7 @@ const handleCreateAssignment = (e: React.FormEvent) => {
               
               <Card className="hover:bg-green-100 hover:text-green-700 dark:hover:bg-green-900/20 dark:hover:text-green-400 cursor-pointer transition-all duration-200 hover:shadow-lg transform hover:scale-105">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Total Students</CardTitle>
+                  <CardTitle className="text-sm font-medium">My Students</CardTitle>
                   <Users className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
@@ -484,49 +413,54 @@ const handleCreateAssignment = (e: React.FormEvent) => {
                     <Edit className="h-6 w-6" />
                     <span>Manage Exams</span>
                   </Button>
-                      <Dialog open={showCreateAssignment} onOpenChange={setShowCreateAssignment}>
-                        <DialogTrigger asChild>
-                          <Button className="h-20 flex flex-col hover:shadow-lg hover:bg-blue-50 hover:text-blue-700 transition-all duration-200 hover:scale-105" variant="outline">
-                            <FileText className="h-6 w-6 mb-2" />
-                            <span className="text-xs sm:text-sm">New Assignment</span>
-                          </Button>
-                        </DialogTrigger>
-                        <DialogContent className="sm:max-w-md w-full">
-                          <DialogHeader>
-                            <DialogTitle>Create Assignment</DialogTitle>
-                          </DialogHeader>
-                          <form onSubmit={handleCreateAssignment} className="space-y-4">
-                            <div>
-                              <Label htmlFor="assignmentTitle">Assignment Title</Label>
-                              <Input id="assignmentTitle" name="assignmentTitle" placeholder="e.g., Problem Set 6" required />
-                            </div>
-                            <div>
-                              <Label htmlFor="assignmentCourse">Course</Label>
-                              <select name="assignmentCourse" className="w-full p-2 border rounded" required>
-                                <option value="">Select Course</option>
-                                {myCourses.map(course => (
-                                  <option key={course.id} value={course.code}>{course.name}</option>
-                                ))}
-                              </select>
-                            </div>
-                            <div>
-                              <Label htmlFor="dueDate">Due Date</Label>
-                              <Input id="dueDate" name="dueDate" type="datetime-local" required />
-                            </div>
-                            <div>
-                              <Label htmlFor="assignmentDescription">Description</Label>
-                              <Textarea id="assignmentDescription" name="assignmentDescription" placeholder="Assignment instructions..." />
-                            </div>
-                            <Button type="submit" className="w-full">Create Assignment</Button>
-                          </form>
-                        </DialogContent>
-                      </Dialog>
+                  <Button 
+                    variant="outline" 
+                    className="h-20 flex flex-col justify-center items-center space-y-2 hover:bg-green-100 hover:text-green-700"
+                    onClick={handleManageAssignments}
+                  >
+                    <FileText className="h-6 w-6" />
+                    <span>Manage Assignments</span>
+                  </Button>
                   <Button 
                     variant="outline" 
                     className="h-20 flex flex-col justify-center items-center space-y-2 hover:bg-green-100 hover:text-green-700"
                   >
                     <Award className="h-6 w-6" />
                     <span>Grade Submissions</span>
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Additional Quick Actions */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg font-semibold">Course Management</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <Button 
+                    variant="outline" 
+                    className="h-16 flex flex-col justify-center items-center space-y-2 hover:bg-green-100 hover:text-green-700"
+                    onClick={handleManageStudents}
+                  >
+                    <Users className="h-5 w-5" />
+                    <span className="text-sm">Manage Students</span>
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    className="h-16 flex flex-col justify-center items-center space-y-2 hover:bg-green-100 hover:text-green-700"
+                    onClick={handlePostAnnouncement}
+                  >
+                    <Bell className="h-5 w-5" />
+                    <span className="text-sm">Post Announcement</span>
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    className="h-16 flex flex-col justify-center items-center space-y-2 hover:bg-green-100 hover:text-green-700"
+                  >
+                    <Calendar className="h-5 w-5" />
+                    <span className="text-sm">Schedule Class</span>
                   </Button>
                 </div>
               </CardContent>
